@@ -2,6 +2,13 @@ import { createContext, useContext, ReactNode } from "react";
 import { useAppwrite } from "./useAppwrite";
 import { getCurrentUser } from "./appwrite";
 
+interface GlobalContextType {
+    isLoggedIn: boolean;
+    user: User | null | undefined;
+    loading: boolean;
+    refetch: (newParams?: Record<string, string | number> | undefined) => Promise<void>;
+}
+
 interface User {
     $id: string;
     name: string;
@@ -9,12 +16,6 @@ interface User {
     avatar: string;
 }
 
-interface GlobalContextType {
-    isLoggedIn: boolean;
-    user: User | null;
-    loading: boolean;
-    refetch: () => void;
-}
 
 const GlobalContext = createContext<GlobalContextType | undefined>(undefined);
 
@@ -22,7 +23,7 @@ interface GlobalProviderProps {
     children: ReactNode;
 }
 
-export const GlobalProvider = ({ children }: { children: React.ReactNode }) => {
+export const GlobalProvider = ({ children }: GlobalProviderProps) => {
 
     const {
         data: user,
