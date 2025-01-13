@@ -2,13 +2,14 @@ import icons from '@/constants/icons';
 import images from '@/constants/images';
 import { router, useLocalSearchParams } from 'expo-router'
 import React from 'react'
-import { Image, Platform, Text, TouchableOpacity, View } from 'react-native';
+import { Image, Platform, Text, TouchableOpacity, View, ScrollView, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Dimensions } from 'react-native';
 import { config, databases } from '@/lib/appwrite';
 import { useAppwrite } from '@/lib/useAppwrite';
 import { facilities } from '@/constants/data';
+import MapView from 'react-native-maps';
 
 const Property = () => {
     const { id } = useLocalSearchParams<{ id?: string }>();
@@ -35,16 +36,19 @@ const Property = () => {
       },
     });
 
-    console.log(property?.type)
+    // console.log(property?.revews);
 
   return (
     <SafeAreaView>
+        <ScrollView
+                showsVerticalScrollIndicator={false}
+              >
       {/* Header */}
         <View className="relative w-full" style={{ height: windowHeight / 2 }}>
-          {/* <Image source={}
-            className="size-full"
-            resizeMode="cover"
-          /> */}
+          <Image source={property?.image} className="size-full"
+          resizeMode="cover"
+
+          />
           <Image source={images.whiteGradient} className="absolute top-0 w-full z-40" />
 
           <View className="z-50 absolute inset-x-7" style={{ top: Platform.OS === 'ios' ? 70 : 20,}}>
@@ -117,7 +121,7 @@ const Property = () => {
       {/* Description */}
       <View className="px-5 mt-5">
         <Text className="text-lg font-rubik-bold text-black-300">Overview</Text>
-        <Text className="text-base font-rubik text-black-200">Here is where the awesome description of this cool place to live will go.</Text>
+        <Text className="text-base font-rubik text-black-200">{property?.description}</Text>
       </View>
 
       {/* Facilities */}
@@ -148,10 +152,64 @@ const Property = () => {
         )}
       </View>
 
+      {/* Gallery */}
+
+        {property?.gallery.length > 0 && (
+        <View className="px-5 mt-5">
+          <Text className="text-lg font-rubik-bold text-black-300">Gallery</Text>
+          <FlatList
+          data={property?.gallery}
+          renderItem={({item}) => <Image source={item.image} />}
+          keyExtractor={(item) => item.$id}
+          horizontal
+          bounces={false}
+          showsHorizontalScrollIndicator={false}
+          contentContainerClassName='flex gap-5 mt-5' />
+        </View>
+        )}
+
+      {/* Location */}
+      <View className="mt-5 px-5">
+        <Text className="text-lg font-rubik-bold text-black-300">Location</Text>
+        <View className="mt-5 flex flex-row items-center gap-2">
+          <Image source={icons.location} className="size-5"/>
+          <Text>{property?.address}</Text>
+        </View>
+
+        <View className="mt-5" style={{ height: 200 }}>
+          <MapView
+            initialRegion={{
+              latitude: property?.geolocation[0],
+              longitude: property?.geolocation[1],
+              latitudeDelta: 0.0922,
+              longitudeDelta: 0.0421,
+            }}
+          ></MapView>
+        </View>
+      </View>
+
+      {/* Reviews */}
+      <View className="mt-5 px-8">
+            <View className="flex flex-row items-center gap-2 justify-between">
+              <View className="flex flex-row items-center gap-2">
+              <Image source={icons.star} className="size-5" />
+              <Text>{property?.rating}</Text>
+              <Text>({property?.reviews?.length})</Text>
+              </View>
+              <TouchableOpacity>
+                <Text className="text-primary-300 font-rubik-bold">See All</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View className="mt-5 flex flex-row items-center gap-2">
+              <Image source={images.avatar} className="size-12" />
+              <Text className="text-sm font-rubik-bold text-black-300">Charolette Hanlin</Text>
+            </View>
+      </View>
 
 
 
-
+      </ScrollView>
     </SafeAreaView>
   )
 }
